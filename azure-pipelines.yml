@@ -20,7 +20,6 @@ name: $(BuildDefinitionName)_$(VersionToBuild)
 
 stages:
   - stage: Publish
-    dependsOn: Validate
     variables:
       isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
     jobs: 
