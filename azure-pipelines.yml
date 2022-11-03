@@ -42,11 +42,12 @@ stages:
 
 
           - task: DotNetCoreCLI@2
-            displayName: Build
+            displayName: Restore
             inputs:
-              command: build
+              command: 'restore'
               projects: '**/PdfSharpCore.csproj'
-              arguments: '--configuration $(BuildConfiguration)'
+              feedsToUse: 'select'
+              verbosityRestore: 'Minimal'
 
           - task: DotNetCoreCLI@2
             displayName: Pack
@@ -57,7 +58,7 @@ stages:
               includesource: true
               versioningScheme: 'byEnvVar'
               versionEnvVar: 'VersionToBuild'
-              verbosityPack: 'Diagnostic'
+              verbosityPack: 'Minimal'
               arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --include-symbols'
 
           - task: PublishSymbols@2
@@ -94,11 +95,12 @@ stages:
               includePreviewVersions: false
 
           - task: DotNetCoreCLI@2
-            displayName: Build
+            displayName: Restore
             inputs:
-              command: build
+              command: 'restore'
               projects: '**/PdfSharpCore.csproj'
-              arguments: '--configuration $(BuildConfiguration)'
+              feedsToUse: 'select'
+              verbosityRestore: 'Minimal'
               
           - task: DotNetCoreCLI@2
             displayName: Pack
