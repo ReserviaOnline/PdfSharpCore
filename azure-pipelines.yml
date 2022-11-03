@@ -33,9 +33,9 @@ stages:
           - checkout: self
             fetchDepth: 5
           - task: UseDotNet@2
-            displayName: 'Use .Net 5.0.x'
+            displayName: 'Use .Net 6.0.x'
             inputs:
-              version: 5.0.x
+              version: 6.0.x
               performMultiLevelLookup: true
               includePreviewVersions: $(General.DotNetUsePreRelease)
 
@@ -70,9 +70,9 @@ stages:
           - checkout: self
             fetchDepth: 5
           - task: UseDotNet@2
-            displayName: 'Use .Net 5.0.x'
+            displayName: 'Use .Net 6.0.x'
             inputs:
-              version: 5.0.x
+              version: 6.0.x
               performMultiLevelLookup: true
               includePreviewVersions: $(General.DotNetUsePreRelease)
 
@@ -116,9 +116,9 @@ stages:
           - checkout: self
             fetchDepth: 5
           - task: UseDotNet@2
-            displayName: 'Use .Net 5.0.x'
+            displayName: 'Use .Net 6.0.x'
             inputs:
-              version: 5.0.x
+              version: 6.0.x
               performMultiLevelLookup: true
               includePreviewVersions: $(General.DotNetUsePreRelease)
 
