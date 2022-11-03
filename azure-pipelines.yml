@@ -42,12 +42,10 @@ stages:
 
 
           - task: DotNetCoreCLI@2
-            displayName: Restore
+            displayName: Build
             inputs:
-              command: 'restore'
+              command: 'build'
               projects: '**/PdfSharpCore.csproj'
-              feedsToUse: 'select'
-              verbosityRestore: 'Minimal'
 
           - task: DotNetCoreCLI@2
             displayName: Pack
@@ -95,12 +93,10 @@ stages:
               includePreviewVersions: false
 
           - task: DotNetCoreCLI@2
-            displayName: Restore
+            displayName: Build
             inputs:
-              command: 'restore'
+              command: 'build'
               projects: '**/PdfSharpCore.csproj'
-              feedsToUse: 'select'
-              verbosityRestore: 'Minimal'
               
           - task: DotNetCoreCLI@2
             displayName: Pack
