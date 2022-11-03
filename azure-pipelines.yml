@@ -19,34 +19,6 @@ variables:
 name: $(BuildDefinitionName)_$(VersionToBuild)
 
 stages:
-  - stage: Validate
-    jobs:
-      - job: Build
-        displayName: 'Build'
-        timeoutInMinutes: 10
-
-        variables:
-          BuildPlatform: "Any CPU"
-          BuildConfiguration: "Release"
-
-        steps:
-          - checkout: self
-            fetchDepth: 5
-          - task: UseDotNet@2
-            displayName: 'Use .Net 6.0.x'
-            inputs:
-              version: 6.0.x
-              performMultiLevelLookup: true
-              includePreviewVersions: false
-
-          - task: DotNetCoreCLI@2
-            displayName: Build
-            inputs:
-              command: build
-              projects: '**/*.csproj'
-              arguments: '--configuration $(BuildConfiguration)' # Update this to match your need
-
-
   - stage: Publish
     dependsOn: Validate
     variables:
@@ -71,6 +43,13 @@ stages:
 
 
           - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: build
+              projects: '**/*.csproj'
+              arguments: '--configuration $(BuildConfiguration)'
+
+          - task: DotNetCoreCLI@2
             displayName: Pack
             inputs:
               command: 'pack'
@@ -79,7 +58,7 @@ stages:
               includesource: true
               versioningScheme: 'byEnvVar'
               versionEnvVar: 'VersionToBuild'
-              verbosityPack: 'Minimal'
+              verbosityPack: 'Diagnostic'
               arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --include-symbols'
 
           - task: PublishSymbols@2
@@ -115,6 +94,13 @@ stages:
               performMultiLevelLookup: true
               includePreviewVersions: false
 
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: build
+              projects: '**/*.csproj'
+              arguments: '--configuration $(BuildConfiguration)'
+              
           - task: DotNetCoreCLI@2
             displayName: Pack
             inputs:
