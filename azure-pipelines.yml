@@ -48,7 +48,7 @@ stages:
   - stage: Publish
     dependsOn: Validate
     variables:
-      isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+      isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
     jobs: 
       - job: Debug
         timeoutInMinutes: 5
