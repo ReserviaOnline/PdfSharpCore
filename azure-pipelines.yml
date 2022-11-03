@@ -21,7 +21,7 @@ name: $(BuildDefinitionName)_$(VersionToBuild)
 stages:
   - stage: Publish
     variables:
-      isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+      isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
     jobs: 
       - job: Debug
         timeoutInMinutes: 5
@@ -45,7 +45,7 @@ stages:
             displayName: Build
             inputs:
               command: build
-              projects: '**/*.csproj'
+              projects: '**/PdfSharpCore.csproj'
               arguments: '--configuration $(BuildConfiguration)'
 
           - task: DotNetCoreCLI@2
@@ -97,7 +97,7 @@ stages:
             displayName: Build
             inputs:
               command: build
-              projects: '**/*.csproj'
+              projects: '**/PdfSharpCore.csproj'
               arguments: '--configuration $(BuildConfiguration)'
               
           - task: DotNetCoreCLI@2
