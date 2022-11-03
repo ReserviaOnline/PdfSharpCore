@@ -19,41 +19,6 @@ variables:
 name: $(BuildDefinitionName)_$(VersionToBuild)
 
 stages:
-  - stage: Validate
-    jobs:
-      - job: Build
-        displayName: 'Build & Test'
-        timeoutInMinutes: 10
-
-        variables:
-          BuildPlatform: "Any CPU"
-          BuildConfiguration: "Release"
-
-        steps:
-          - checkout: self
-            fetchDepth: 5
-          - task: UseDotNet@2
-            displayName: 'Use .Net 6.0.x'
-            inputs:
-              version: 6.0.x
-              performMultiLevelLookup: true
-              includePreviewVersions: $(General.DotNetUsePreRelease)
-
-          - task: DotNetCoreCLI@2
-            displayName: Build
-            inputs:
-              command: build
-              projects: '**/*.csproj'
-              arguments: '--configuration $(BuildConfiguration)' # Update this to match your need
-
-
-          - task: DotNetCoreCLI@2
-            displayName: Test
-            inputs:
-              command: test
-              projects: '**/*Test*.csproj'
-              arguments: '--configuration $(BuildConfiguration) --collect "Code coverage"'
-
   - stage: Publish
     dependsOn: Validate
     variables:
@@ -74,7 +39,7 @@ stages:
             inputs:
               version: 6.0.x
               performMultiLevelLookup: true
-              includePreviewVersions: $(General.DotNetUsePreRelease)
+              includePreviewVersions: false
 
 
           - task: DotNetCoreCLI@2
@@ -120,7 +85,7 @@ stages:
             inputs:
               version: 6.0.x
               performMultiLevelLookup: true
-              includePreviewVersions: $(General.DotNetUsePreRelease)
+              includePreviewVersions: false
 
           - task: DotNetCoreCLI@2
             displayName: Pack
