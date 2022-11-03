@@ -1,0 +1,143 @@
+resources:
+  - repo: self
+
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- group: general-properties
+- name: feedGuid
+  value: '2eaa9587-e4eb-4059-90c4-e3275b6b6320/d093a0ce-6678-4521-a781-39ede7439050'
+- name: VersionWithoutRevision
+  value: $[coalesce(variables.version, format('{0:yyyy\.M\.d}', pipeline.startTime))]
+- name: VersionToBuild
+  value: $[format('{0}.{1}', variables.VersionWithoutRevision, counter(variables.VersionWithoutRevision, 0))]
+
+name: $(BuildDefinitionName)_$(VersionToBuild)
+
+stages:
+  - stage: Validate
+    jobs:
+      - job: Build
+        displayName: 'Build & Test'
+        timeoutInMinutes: 10
+
+        variables:
+          BuildPlatform: "Any CPU"
+          BuildConfiguration: "Release"
+
+        steps:
+          - checkout: self
+            fetchDepth: 5
+          - task: UseDotNet@2
+            displayName: 'Use .Net $(General.DotNetVersion)'
+            inputs:
+              version: $(General.DotNetVersion)
+              performMultiLevelLookup: true
+              includePreviewVersions: $(General.DotNetUsePreRelease)
+
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: build
+              projects: '**/*.csproj'
+              arguments: '--configuration $(BuildConfiguration)' # Update this to match your need
+
+
+          - task: DotNetCoreCLI@2
+            displayName: Test
+            inputs:
+              command: test
+              projects: '**/*Test*.csproj'
+              arguments: '--configuration $(BuildConfiguration) --collect "Code coverage"'
+
+  - stage: Publish
+    dependsOn: Validate
+    variables:
+      isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+    jobs: 
+      - job: Debug
+        timeoutInMinutes: 5
+
+        variables:
+          BuildPlatform: "Any CPU"
+          BuildConfiguration: "Debug"
+
+        steps:
+          - checkout: self
+            fetchDepth: 5
+          - task: UseDotNet@2
+            displayName: 'Use .Net $(General.DotNetVersion)'
+            inputs:
+              version: $(General.DotNetVersion)
+              performMultiLevelLookup: true
+              includePreviewVersions: $(General.DotNetUsePreRelease)
+
+
+          - task: DotNetCoreCLI@2
+            displayName: Pack
+            inputs:
+              command: 'pack'
+              packagesToPack: '**/PdfSharpCore.csproj'
+              includesymbols: true
+              includesource: true
+              versioningScheme: 'byEnvVar'
+              versionEnvVar: 'VersionToBuild'
+              verbosityPack: 'Minimal'
+              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --include-symbols'
+
+          - task: PublishSymbols@2
+            inputs:
+              SearchPattern: '**/bin/**/*.pdb'
+              SymbolServerType: 'TeamServices'
+              TreatNotIndexedAsWarning: true
+
+
+          - task: NuGetCommand@2
+            displayName: Push
+            inputs:
+              command: push
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*nupkg'
+              nuGetFeedType: 'internal'
+              publishVstsFeed: $(General.DebugNugetFeed)
+
+      - job: Release
+        timeoutInMinutes: 5
+        condition: and(succeeded(), eq(variables.isMain, 'true'))
+
+        variables:
+          BuildPlatform: "Any CPU"
+          BuildConfiguration: "Release"
+
+        steps:
+          - checkout: self
+            fetchDepth: 5
+          - task: UseDotNet@2
+            displayName: 'Use .Net $(General.DotNetVersion)'
+            inputs:
+              version: $(General.DotNetVersion)
+              performMultiLevelLookup: true
+              includePreviewVersions: $(General.DotNetUsePreRelease)
+
+          - task: DotNetCoreCLI@2
+            displayName: Pack
+            inputs:
+              command: 'pack'
+              packagesToPack: '**/PdfSharpCore.csproj'
+              includesymbols: false
+              includesource: false
+              versioningScheme: 'byEnvVar'
+              versionEnvVar: 'VersionToBuild'
+              verbosityPack: 'Minimal'
+              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+
+          - task: NuGetCommand@2
+            displayName: Push
+            inputs:
+              command: push
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*nupkg'
+              nuGetFeedType: 'internal'
+              publishVstsFeed: $(General.ReleaseNugetFeed)
