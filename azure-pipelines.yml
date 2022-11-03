@@ -52,12 +52,12 @@ stages:
             inputs:
               command: 'pack'
               packagesToPack: '**/PdfSharpCore.csproj'
-              includesymbols: true
-              includesource: true
+              includesymbols: false
+              includesource: false
               versioningScheme: 'byEnvVar'
               versionEnvVar: 'VersionToBuild'
               verbosityPack: 'Minimal'
-              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --include-symbols'
+              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
 
           - task: PublishSymbols@2
             inputs:
