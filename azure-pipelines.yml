@@ -1,9 +1,6 @@
 resources:
   - repo: self
 
-trigger:
-- master
-
 pool:
   vmImage: ubuntu-latest
 
@@ -19,9 +16,39 @@ variables:
 name: $(BuildDefinitionName)_$(VersionToBuild)
 
 stages:
+  - stage: Validate
+    jobs:
+      - job: Build
+        displayName: 'Build & Test'
+        timeoutInMinutes: 10
+
+        variables:
+          BuildPlatform: "Any CPU"
+          BuildConfiguration: "Release"
+
+        steps:
+          - checkout: self
+            fetchDepth: 5
+          - task: UseDotNet@2
+            displayName: 'Use .Net $(General.DotNetVersion)'
+            inputs:
+              version: $(General.DotNetVersion)
+              performMultiLevelLookup: true
+              includePreviewVersions: $(General.DotNetUsePreRelease)
+
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: build
+              projects: '**/PdfSharpCore.csproj'
+              arguments: '--configuration $(BuildConfiguration)' # Update this to match your need
+
+
+
   - stage: Publish
+    dependsOn: Validate
     variables:
-      isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+      isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
     jobs: 
       - job: Debug
         timeoutInMinutes: 5
@@ -34,18 +61,12 @@ stages:
           - checkout: self
             fetchDepth: 5
           - task: UseDotNet@2
-            displayName: 'Use .Net 6.0.x'
+            displayName: 'Use .Net $(General.DotNetVersion)'
             inputs:
-              version: 6.0.x
+              version: $(General.DotNetVersion)
               performMultiLevelLookup: true
-              includePreviewVersions: false
+              includePreviewVersions: $(General.DotNetUsePreRelease)
 
-
-          - task: DotNetCoreCLI@2
-            displayName: Build
-            inputs:
-              command: 'build'
-              projects: '**/PdfSharpCore.csproj'
 
           - task: DotNetCoreCLI@2
             displayName: Pack
@@ -86,18 +107,12 @@ stages:
           - checkout: self
             fetchDepth: 5
           - task: UseDotNet@2
-            displayName: 'Use .Net 6.0.x'
+            displayName: 'Use .Net $(General.DotNetVersion)'
             inputs:
-              version: 6.0.x
+              version: $(General.DotNetVersion)
               performMultiLevelLookup: true
-              includePreviewVersions: false
+              includePreviewVersions: $(General.DotNetUsePreRelease)
 
-          - task: DotNetCoreCLI@2
-            displayName: Build
-            inputs:
-              command: 'build'
-              projects: '**/PdfSharpCore.csproj'
-              
           - task: DotNetCoreCLI@2
             displayName: Pack
             inputs:
