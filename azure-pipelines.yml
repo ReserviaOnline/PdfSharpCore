@@ -22,7 +22,7 @@ stages:
   - stage: Validate
     jobs:
       - job: Build
-        displayName: 'Build & Test'
+        displayName: 'Build'
         timeoutInMinutes: 10
 
         variables:
@@ -46,13 +46,6 @@ stages:
               projects: '**/*.csproj'
               arguments: '--configuration $(BuildConfiguration)' # Update this to match your need
 
-
-          - task: DotNetCoreCLI@2
-            displayName: Test
-            inputs:
-              command: test
-              projects: '**/*Test*.csproj'
-              arguments: '--configuration $(BuildConfiguration) --collect "Code coverage"'
 
   - stage: Publish
     dependsOn: Validate
